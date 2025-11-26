@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { gqlRequest } from "../../core/graphqlClient";
-import { useAuth, User } from "./AuthContext";
+import { useAuth } from "./AuthContext";
+import type { User } from "./AuthContext";
 
 interface RegisterFormProps {
   onRegistered: () => void;
