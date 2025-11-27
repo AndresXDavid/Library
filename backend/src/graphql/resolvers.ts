@@ -243,7 +243,7 @@ export const resolvers = {
       return true;
     },
 
-    // LOANS
+    // LOANS (staff/admin)
     createLoan: async (_: any, args: { userId: string; bookId: string; days?: number }, { user }: Context) => {
       if (!user) throw new Error("No autenticado");
       if (user.role !== "staff" && user.role !== "admin") {
@@ -280,6 +280,42 @@ export const resolvers = {
       await book.save();
 
       await logAction(user.id, "LOAN_CREATE", `Préstamo creado para usuario ${args.userId}`);
+
+      const populated = await Loan.findById(loan._id)
+        .populate("userId")
+        .populate("bookId");
+
+      return {
+        ...populated!.toObject(),
+        user: (populated as any).userId,
+        book: (populated as any).bookId
+      };
+    },
+
+    // <-- NUEVO: loanBook para usuarios normales (usa user del contexto)
+    loanBook: async (_: any, args: { bookId: string; days?: number }, { user }: Context) => {
+      if (!user) throw new Error("No autenticado");
+
+      const book: any = await Book.findById(args.bookId);
+      if (!book || book.availableCopies <= 0) {
+        throw new Error("Libro no disponible");
+      }
+
+      const days = args.days || 14;
+      const returnDeadline = new Date();
+      returnDeadline.setDate(returnDeadline.getDate() + days);
+
+      const loan = await Loan.create({
+        userId: user.id,
+        bookId: args.bookId,
+        returnDeadline,
+        status: "active"
+      });
+
+      book.availableCopies -= 1;
+      await book.save();
+
+      await logAction(user.id, "LOAN_CREATE_USER", `Préstamo solicitado por usuario ${user.id} para libro ${args.bookId}`);
 
       const populated = await Loan.findById(loan._id)
         .populate("userId")

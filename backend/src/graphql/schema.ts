@@ -132,7 +132,8 @@ export const typeDefs = `#graphql
     
     createLoan(userId: ID!, bookId: ID!, days: Int): Loan!
     returnBook(loanId: ID!): Loan!
-    
+    loanBook(bookId: ID!, days: Int): Loan
+
     createReservation(bookId: ID!): Reservation!
     cancelReservation(id: ID!): Boolean!
     
