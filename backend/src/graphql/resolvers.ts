@@ -25,7 +25,7 @@ export const resolvers = {
   Query: {
     me: async (_: any, __: any, { user }: Context) => {
       if (!user) return null;
-      return await User.findById(user.id).lean();
+      return await User.findById(user.id);
     },
 
     // BOOKS
@@ -47,11 +47,11 @@ export const resolvers = {
         filter.availableCopies = args.available ? { $gt: 0 } : 0;
       }
 
-      return await Book.find(filter).lean();
+      return await Book.find(filter);
     },
 
     book: async (_: any, args: { id: string }) => {
-      return await Book.findById(args.id).lean();
+      return await Book.findById(args.id);
     },
 
     // LOANS
@@ -67,11 +67,10 @@ export const resolvers = {
 
       const loans = await Loan.find(filter)
         .populate("userId")
-        .populate("bookId")
-        .lean();
+        .populate("bookId");
 
       return loans.map((loan: any) => ({
-        ...loan,
+        ...loan.toObject(),
         user: loan.userId,
         book: loan.bookId
       }));
@@ -81,11 +80,10 @@ export const resolvers = {
       if (!user) throw new Error("No autenticado");
 
       const loans = await Loan.find({ userId: user.id })
-        .populate("bookId")
-        .lean();
+        .populate("bookId");
 
       return loans.map((loan: any) => ({
-        ...loan,
+        ...loan.toObject(),
         user: { id: user.id },
         book: loan.bookId
       }));
@@ -99,11 +97,10 @@ export const resolvers = {
       
       const reservations = await Reservation.find(filter)
         .populate("userId")
-        .populate("bookId")
-        .lean();
+        .populate("bookId");
 
       return reservations.map((res: any) => ({
-        ...res,
+        ...res.toObject(),
         user: res.userId,
         book: res.bookId
       }));
@@ -113,11 +110,10 @@ export const resolvers = {
       if (!user) throw new Error("No autenticado");
 
       const reservations = await Reservation.find({ userId: user.id })
-        .populate("bookId")
-        .lean();
+        .populate("bookId");
 
       return reservations.map((res: any) => ({
-        ...res,
+        ...res.toObject(),
         user: { id: user.id },
         book: res.bookId
       }));
@@ -125,11 +121,11 @@ export const resolvers = {
 
     // EVENTS
     events: async () => {
-      return await Event.find().populate("participants").populate("createdBy").lean();
+      return await Event.find().populate("participants").populate("createdBy");
     },
 
     event: async (_: any, args: { id: string }) => {
-      return await Event.findById(args.id).populate("participants").populate("createdBy").lean();
+      return await Event.findById(args.id).populate("participants").populate("createdBy");
     },
 
     // USER MANAGEMENT
@@ -138,7 +134,7 @@ export const resolvers = {
       if (user.role !== "staff" && user.role !== "admin") {
         throw new Error("Sin permisos");
       }
-      return await User.find().lean();
+      return await User.find();
     },
 
     // STATS
@@ -166,11 +162,10 @@ export const resolvers = {
       const logs = await AuditLog.find()
         .sort({ timestamp: -1 })
         .limit(args.limit || 50)
-        .populate("userId")
-        .lean();
+        .populate("userId");
 
       return logs.map((log: any) => ({
-        ...log,
+        ...log.toObject(),
         user: log.userId
       }));
     }
