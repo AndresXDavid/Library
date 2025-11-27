@@ -53,16 +53,30 @@ const books = [
   { "title": "Madame Bovary", "author": "Gustave Flaubert" },
   { "title": "Ulises", "author": "James Joyce" },
   { "title": "Matar a un ruiseñor", "author": "Harper Lee" }
-];
+]
 
-async function seed() {
-  await mongoose.connect(process.env.MONGO_URI!);
-  console.log("Conectado a Mongo");
+async function run() {
+  try {
+    console.log("MONGO_URI =>", process.env.MONGO_URI);
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI no está definido en .env");
+    }
 
-  await Book.insertMany(books);
-  console.log("Libros insertados!");
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Conectado a MongoDB");
 
-  process.exit(0);
+    // Opcional: limpiar colección antes
+    // await Book.deleteMany({});
+
+    await Book.insertMany(books);
+    console.log(`Se insertaron ${books.length} libros`);
+
+  } catch (err) {
+    console.error("Error al ejecutar seed:", err);
+  } finally {
+    await mongoose.disconnect();
+    process.exit(0);
+  }
 }
 
-seed();
+run();
