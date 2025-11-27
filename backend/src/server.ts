@@ -1,4 +1,5 @@
-// src/server.ts
+import "dotenv/config"; // 👈 esto carga .env automáticamente
+
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import express, { Request } from "express";
