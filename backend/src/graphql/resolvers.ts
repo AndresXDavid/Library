@@ -38,18 +38,18 @@ export const resolvers = {
   Query: {
     me: (_parent: unknown, _args: unknown, { user }: Context) => user,
 
-    books: () => Book.find(),
+    books: async () => {
+      // ejecuta la consulta y devuelve un array plano
+      return await Book.find().lean();
+    },
 
-    book: (_parent: unknown, args: BookArgs) => {
-      return Book.findById(args.id);
+    book: async (_parent: unknown, args: BookArgs) => {
+      return await Book.findById(args.id).lean();
     },
   },
 
   Mutation: {
-    register: async (
-      _parent: unknown,
-      args: RegisterArgs
-    ) => {
+    register: async (_parent: unknown, args: RegisterArgs) => {
       const { name, email, password } = args;
 
       const hash = await bcrypt.hash(password, 10);
@@ -57,10 +57,7 @@ export const resolvers = {
       return { token: createToken(user), user };
     },
 
-    login: async (
-      _parent: unknown,
-      args: LoginArgs
-    ) => {
+    login: async (_parent: unknown, args: LoginArgs) => {
       const { email, password } = args;
 
       const user: any = await User.findOne({ email });
@@ -72,11 +69,7 @@ export const resolvers = {
       return { token: createToken(user), user };
     },
 
-    addBook: async (
-      _parent: unknown,
-      args: AddBookArgs,
-      { user }: Context
-    ) => {
+    addBook: async (_parent: unknown, args: AddBookArgs, { user }: Context) => {
       requireRole("admin", user);
       const { title, author } = args;
       return Book.create({ title, author });
@@ -95,3 +88,4 @@ export const resolvers = {
     },
   },
 };
+
