@@ -69,54 +69,68 @@ export const resolvers = {
         .populate("userId")
         .populate("bookId");
 
-      return loans.map((loan: any) => ({
-        ...loan.toObject(),
-        user: loan.userId,
-        book: loan.bookId
-      }));
+      return loans
+        .filter((loan: any) => loan.userId && loan.bookId)
+        .map((loan: any) => ({
+          ...loan.toObject(),
+          user: loan.userId,
+          book: loan.bookId
+        }));
     },
 
     myLoans: async (_: any, __: any, { user }: Context) => {
       if (!user) throw new Error("No autenticado");
 
+      const currentUser = await User.findById(user.id);
+      if (!currentUser) throw new Error("Usuario no encontrado");
+
       const loans = await Loan.find({ userId: user.id })
         .populate("bookId");
 
-      return loans.map((loan: any) => ({
-        ...loan.toObject(),
-        user: { id: user.id },
-        book: loan.bookId
-      }));
+      return loans
+        .filter((loan: any) => loan.bookId)
+        .map((loan: any) => ({
+          ...loan.toObject(),
+          user: currentUser,
+          book: loan.bookId
+        }));
     },
 
     // RESERVATIONS
     reservations: async (_: any, args: { userId?: string }, { user }: Context) => {
       if (!user) throw new Error("No autenticado");
-      
+
       const filter: any = args.userId ? { userId: args.userId } : {};
-      
+
       const reservations = await Reservation.find(filter)
         .populate("userId")
         .populate("bookId");
 
-      return reservations.map((res: any) => ({
-        ...res.toObject(),
-        user: res.userId,
-        book: res.bookId
-      }));
+      return reservations
+        .filter((res: any) => res.userId && res.bookId)
+        .map((res: any) => ({
+          ...res.toObject(),
+          user: res.userId,
+          book: res.bookId
+        }));
     },
 
     myReservations: async (_: any, __: any, { user }: Context) => {
       if (!user) throw new Error("No autenticado");
 
+      const currentUser = await User.findById(user.id);
+      if (!currentUser) throw new Error("Usuario no encontrado");
+
       const reservations = await Reservation.find({ userId: user.id })
         .populate("bookId");
 
-      return reservations.map((res: any) => ({
-        ...res.toObject(),
-        user: { id: user.id },
-        book: res.bookId
-      }));
+      return reservations
+        .filter((res: any) => res.bookId)
+        .map((res: any) => ({
+          ...res.toObject(),
+          user: currentUser,
+          book: res.bookId
+        }));
     },
 
     // EVENTS
@@ -158,7 +172,7 @@ export const resolvers = {
     // AUDIT
     auditLogs: async (_: any, args: { limit?: number }, { user }: Context) => {
       requireRole("admin", user);
-      
+
       const logs = await AuditLog.find()
         .sort({ timestamp: -1 })
         .limit(args.limit || 50)
@@ -166,7 +180,7 @@ export const resolvers = {
 
       return logs.map((log: any) => ({
         ...log.toObject(),
-        user: log.userId
+        user: log.userId || null
       }));
     }
   },

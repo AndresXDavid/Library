@@ -156,25 +156,6 @@ export const MemberView: React.FC = () => {
     }
   };
 
-  const handleUnregisterEvent = async (eventId: string) => {
-    try {
-      await gqlRequest(
-        `mutation UnregisterFromEvent($eventId: ID!) {
-          unregisterFromEvent(eventId: $eventId) { id }
-        }`,
-        { eventId }
-      );
-      setMessage({ type: "success", text: "Desinscripción exitosa del evento" });
-      loadEvents();
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
-    }
-  };
-
-  const isRegisteredInEvent = (event: Event, userId: string) => {
-    return event.participants.some(p => p.id === userId);
-  };
-
   return (
     <div className="view-container">
       <div className="tabs">
