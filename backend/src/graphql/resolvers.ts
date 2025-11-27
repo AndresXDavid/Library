@@ -132,6 +132,15 @@ export const resolvers = {
       return await Event.findById(args.id).populate("participants").populate("createdBy").lean();
     },
 
+    // USER MANAGEMENT
+    users: async (_: any, __: any, { user }: Context) => {
+      if (!user) throw new Error("No autenticado");
+      if (user.role !== "staff" && user.role !== "admin") {
+        throw new Error("Sin permisos");
+      }
+      return await User.find().lean();
+    },
+
     // STATS
     stats: async (_: any, __: any, { user }: Context) => {
       if (!user) throw new Error("No autenticado");
